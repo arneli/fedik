@@ -110,7 +110,13 @@ pub struct ClockWidget {
 }
 
 impl ClockWidget {
-    pub fn new(display: TimeDisplay, show_date: bool, show_week: bool, bold: bool, center: bool) -> Self {
+    pub fn new(
+        display: TimeDisplay,
+        show_date: bool,
+        show_week: bool,
+        bold: bool,
+        center: bool,
+    ) -> Self {
         Self {
             time_widget: TimeWidget::new(display, bold, center),
             date_widget: DateWidget::new(
@@ -190,10 +196,7 @@ impl WidgetRef for DateWidget {
         } else {
             0
         };
-        let area = area.offset(Offset {
-            x: offset_x,
-            y: 0,
-        });
+        let area = area.offset(Offset { x: offset_x, y: 0 });
         let segment = Span::raw(date_string);
         let line = Line::from(vec![segment]);
 
@@ -233,10 +236,7 @@ impl WidgetRef for WeekWidget {
         } else {
             0
         };
-        let area = area.offset(Offset {
-            x: offset_x,
-            y: 0,
-        });
+        let area = area.offset(Offset { x: offset_x, y: 0 });
         let segment = Span::raw(week_str);
         let line = Line::from(vec![segment]);
         let style = if self.bold {

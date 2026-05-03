@@ -1,9 +1,5 @@
 use ratatui::style::{Color::*, Modifier, Style};
-use std::{
-    collections::HashSet,
-    convert::TryFrom,
-    fmt,
-};
+use std::{collections::HashSet, convert::TryFrom, fmt};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RenderedTextError {
