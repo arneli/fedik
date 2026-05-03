@@ -93,9 +93,9 @@ impl Font {
         for c in input.chars() {
             let glyph = self.glyphs.iter().find(|g| g.character == c);
             if let Some(glyph) = glyph {
-                for i in 0..5 {
-                    result[i].push_str(glyph.segments[i]);
-                    result[i].push(' ');
+                for (i, line) in result.iter_mut().enumerate().take(5) {
+                    line.push_str(glyph.segments[i]);
+                    line.push(' ');
                 }
             } else {
                 return Err(RenderedTextError::InvalidCharacter(c));

@@ -83,14 +83,13 @@ async fn loop_run(
             widgets::TimeDisplay::SecondsMs2 => 10,
             widgets::TimeDisplay::SecondsMs3 => 1,
         };
-        if poll(widgets::get_next_timing(unix_time, precision_ms))? {
-            if let Event::Key(key) = read()? {
-                if key.kind == KeyEventKind::Press {
-                    match key.code {
-                        KeyCode::Char('q') | KeyCode::Esc => return Ok(terminal),
-                        _ => {}
-                    }
-                }
+        if poll(widgets::get_next_timing(unix_time, precision_ms))?
+            && let Event::Key(key) = read()?
+            && key.kind == KeyEventKind::Press
+        {
+            match key.code {
+                KeyCode::Char('q') | KeyCode::Esc => return Ok(terminal),
+                _ => {}
             }
         }
     }

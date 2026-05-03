@@ -319,15 +319,16 @@ impl WidgetRef for TimeWidget {
         } else {
             0
         };
-        let mut _offset: Offset = Offset::default();
-        _offset.x = offset_x;
-        _offset.y = offset_y;
+        let offset = Offset {
+            x: offset_x,
+            y: offset_y,
+        };
         style_vec.iter().enumerate().for_each(|(i, line)| {
             line.iter().enumerate().for_each(|(j, style)| {
-                let y = _offset.y + i as i32;
-                let x = _offset.x + j as i32;
+                let y = offset.y + i as i32;
+                let x = offset.x + j as i32;
                 let offset = Offset { x, y };
-                Span::styled(" ", style.clone()).render(area.offset(offset), buf);
+                Span::styled(" ", *style).render(area.offset(offset), buf);
             });
         });
     }
