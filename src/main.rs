@@ -32,15 +32,13 @@ struct Args {
     ///     -b            Use bold font
     #[clap(short = 'b', long, default_value = "false")]
     bold: bool,
-    ///     --hour-12     Use 12-hour format
-    ///                   (note: --hour-12 is not implemented yet)
+    ///     --hour-12     Not implemented yet: use 12-hour format
     #[clap(long, default_value = "false")]
     hour_12: bool,
     ///     -u            Use UTC time
     #[clap(short = 'u', long)]
     utc: bool,
-    ///     -f format     Set the date format
-    ///                   (note: --format is not implemented yet)
+    ///     -f format     Not implemented yet: set the date format
     #[clap(short = 'f', long, value_name = "FORMAT")]
     format: Option<String>,
 }
