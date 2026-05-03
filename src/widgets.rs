@@ -85,6 +85,7 @@ impl RootWidget {
                 args.show_date,
                 args.show_week,
                 args.bold,
+                args.center,
             )),
         }
     }
@@ -105,24 +106,28 @@ pub struct ClockWidget {
     pub show_date: bool,
     pub show_week: bool,
     pub bold: bool,
+    pub center: bool,
 }
 
 impl ClockWidget {
-    pub fn new(display: TimeDisplay, show_date: bool, show_week: bool, bold: bool) -> Self {
+    pub fn new(display: TimeDisplay, show_date: bool, show_week: bool, bold: bool, center: bool) -> Self {
         Self {
-            time_widget: TimeWidget::new(display, bold),
+            time_widget: TimeWidget::new(display, bold, center),
             date_widget: DateWidget::new(
                 chrono::NaiveDate::from_ymd_opt(2000, 1, 1).unwrap(),
                 bold,
+                center,
             ),
             week_widget: WeekWidget::new(
                 chrono::NaiveDate::from_ymd_opt(2000, 1, 1).unwrap(),
                 bold,
+                center,
             ),
             layout: Layout::default(),
             show_date,
             show_week,
             bold,
+            center,
         }
     }
 }
@@ -163,14 +168,16 @@ pub struct DateWidget {
     pub state: WidgetState,
     pub date: chrono::NaiveDate,
     pub bold: bool,
+    pub center: bool,
 }
 
 impl DateWidget {
-    pub fn new(date: chrono::NaiveDate, bold: bool) -> Self {
+    pub fn new(date: chrono::NaiveDate, bold: bool, center: bool) -> Self {
         Self {
             state: WidgetState::Enable,
             date,
             bold,
+            center,
         }
     }
 }
@@ -178,9 +185,13 @@ impl DateWidget {
 impl WidgetRef for DateWidget {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         let date_string = self.date.to_string();
+        let offset_x = if self.center {
+            area.width.overflowing_sub(date_string.len() as u16).0 as i32 / 2
+        } else {
+            0
+        };
         let area = area.offset(Offset {
-            //x: (area.width / 2) as i32 - (date_string.len() / 2) as i32,
-            x: area.width.overflowing_sub(date_string.len() as u16).0 as i32 / 2,
+            x: offset_x,
             y: 0,
         });
         let segment = Span::raw(date_string);
@@ -200,14 +211,16 @@ pub struct WeekWidget {
     pub state: WidgetState,
     pub weekday: chrono::NaiveDate,
     pub bold: bool,
+    pub center: bool,
 }
 
 impl WeekWidget {
-    pub fn new(weekday: chrono::NaiveDate, bold: bool) -> Self {
+    pub fn new(weekday: chrono::NaiveDate, bold: bool, center: bool) -> Self {
         Self {
             state: WidgetState::Enable,
             weekday,
             bold,
+            center,
         }
     }
 }
@@ -215,8 +228,13 @@ impl WeekWidget {
 impl WidgetRef for WeekWidget {
     fn render_ref(&self, area: Rect, buf: &mut Buffer) {
         let week_str = format_week_string(self.weekday);
+        let offset_x = if self.center {
+            area.width.overflowing_sub(week_str.len() as u16).0 as i32 / 2
+        } else {
+            0
+        };
         let area = area.offset(Offset {
-            x: area.width.overflowing_sub(week_str.len() as u16).0 as i32 / 2,
+            x: offset_x,
             y: 0,
         });
         let segment = Span::raw(week_str);
@@ -236,15 +254,17 @@ pub struct TimeWidget {
     pub time: Time,
     pub display: TimeDisplay,
     pub bold: bool,
+    pub center: bool,
 }
 
 impl TimeWidget {
-    pub fn new(display: TimeDisplay, bold: bool) -> Self {
+    pub fn new(display: TimeDisplay, bold: bool, center: bool) -> Self {
         Self {
             state: WidgetState::Enable,
             time: Time::default(),
             display,
             bold,
+            center,
         }
     }
 }
@@ -289,10 +309,19 @@ impl WidgetRef for TimeWidget {
         let rendered = RenderedText::try_from(time_str.as_str()).unwrap();
         let style_vec = convert_style_vec(rendered.lines, self.bold);
         let str_width = style_vec[0].len() as u16;
-        let offset_x = (area.width.overflowing_sub(str_width).0) as i32 / 2;
+        let offset_x = if self.center {
+            (area.width.overflowing_sub(str_width).0) as i32 / 2
+        } else {
+            0
+        };
+        let offset_y = if self.center {
+            area.height.overflowing_sub(style_vec.len() as u16).0 as i32
+        } else {
+            0
+        };
         let mut _offset: Offset = Offset::default();
         _offset.x = offset_x;
-        _offset.y = area.height.overflowing_sub(style_vec.len() as u16).0 as i32;
+        _offset.y = offset_y;
         style_vec.iter().enumerate().for_each(|(i, line)| {
             line.iter().enumerate().for_each(|(j, style)| {
                 let y = _offset.y + i as i32;
@@ -322,19 +351,21 @@ mod tests {
 
     #[test]
     fn test_time_widget_new_sets_display() {
-        let widget = TimeWidget::new(TimeDisplay::SecondsMs2, true);
+        let widget = TimeWidget::new(TimeDisplay::SecondsMs2, true, true);
         assert_eq!(widget.display, TimeDisplay::SecondsMs2);
         assert!(widget.bold);
+        assert!(widget.center);
         assert_eq!(widget.time, Time::default());
     }
 
     #[test]
     fn test_clock_widget_new_sets_flags() {
-        let widget = ClockWidget::new(TimeDisplay::SecondsMs1, false, true, false);
+        let widget = ClockWidget::new(TimeDisplay::SecondsMs1, false, true, false, true);
         assert_eq!(widget.time_widget.display, TimeDisplay::SecondsMs1);
         assert!(!widget.show_date);
         assert!(widget.show_week);
         assert!(!widget.bold);
+        assert!(widget.center);
     }
 
     #[test]

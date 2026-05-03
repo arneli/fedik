@@ -119,7 +119,6 @@ impl TryFrom<&str> for RenderedText {
 }
 
 pub fn convert_style_vec(strings: Vec<String>, bold: bool) -> Vec<Vec<ratatui::style::Style>> {
-    //let space = Style::default().bg(Gray);
     let space = Style::default();
     let stroke = if bold {
         Style::default().bg(Green).add_modifier(Modifier::BOLD)

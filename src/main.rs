@@ -27,8 +27,7 @@ struct Args {
     #[clap(short = 'w', long, default_value = "false")]
     show_week: bool,
     ///     -c            Set the clock at the center of the terminal
-    ///                   (note: --center is not implemented yet)
-    #[clap(short = 'c', long, default_value = "true")]
+    #[clap(short = 'c', long, default_value = "false")]
     center: bool,
     ///     -b            Use bold font
     #[clap(short = 'b', long, default_value = "false")]
@@ -68,18 +67,13 @@ async fn loop_run(
     utc: bool,
 ) -> Result<ratatui::Terminal<CrosstermBackend<std::io::Stdout>>> {
     loop {
-        let area = Rect::new(
-            0,
-            0,
-            terminal.get_frame().area().width,
-            terminal.get_frame().area().height,
-        );
+        let area = terminal.get_frame().area();
         let now: chrono::NaiveDateTime = if utc {
             Utc::now().naive_utc()
         } else {
             Local::now().naive_local()
         };
-        terminal_action(now, root_widget, &mut terminal, &area).await?;
+        terminal_action(now, root_widget, &mut terminal, area)?;
         terminal.hide_cursor()?;
         let unix_time = widgets::get_unix_time()?;
         let precision_ms = match root_widget.clock_widget.time_widget.display {
@@ -102,24 +96,21 @@ async fn loop_run(
     }
 }
 
-async fn terminal_action(
+fn terminal_action(
     now: chrono::NaiveDateTime,
     app: &mut widgets::RootWidget,
     terminal: &mut ratatui::Terminal<CrosstermBackend<std::io::Stdout>>,
-    area: &Rect,
+    area: Rect,
 ) -> Result<()> {
     use ratatui::widgets::FrameExt;
     app.clock_widget.time_widget.time = now.into();
     app.clock_widget.date_widget.date = now.date();
     app.clock_widget.week_widget.weekday = now.date();
-    terminal.draw(|frame| frame.render_widget_ref(app.clone(), *area))?;
+    terminal.draw(|frame| frame.render_widget_ref(app.clone(), area))?;
     Ok(())
 }
 
 fn validate_args(args: &Args) -> Result<()> {
-    if !args.center {
-        anyhow::bail!("--center is not implemented yet");
-    }
     if args.hour_12 {
         anyhow::bail!("--hour-12 is not implemented yet");
     }
