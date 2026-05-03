@@ -2,11 +2,7 @@ use anyhow::Result;
 use chrono::{Local, Utc};
 use clap::Parser;
 mod font;
-use crossterm::{
-    event::{Event, KeyCode, KeyEventKind, poll, read},
-    execute,
-    terminal::{LeaveAlternateScreen, disable_raw_mode},
-};
+use crossterm::event::{Event, KeyCode, KeyEventKind, poll, read};
 use ratatui::{layout::Rect, prelude::CrosstermBackend};
 
 mod widgets;
@@ -43,27 +39,32 @@ struct Args {
     format: Option<String>,
 }
 
+struct TerminalGuard;
+
+impl Drop for TerminalGuard {
+    fn drop(&mut self) {
+        ratatui::restore();
+    }
+}
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let args = Args::parse();
     validate_args(&args)?;
     let utc = args.utc;
     let mut terminal = ratatui::init();
+    let _terminal_guard = TerminalGuard;
     terminal.hide_cursor()?;
     let mut root_widget = widgets::RootWidget::new(args);
 
-    terminal = loop_run(terminal, &mut root_widget, utc).await?;
-
-    disable_raw_mode()?;
-    execute!(terminal.backend_mut(), LeaveAlternateScreen,)?;
-    Ok(())
+    loop_run(terminal, &mut root_widget, utc).await
 }
 
 async fn loop_run(
     mut terminal: ratatui::Terminal<CrosstermBackend<std::io::Stdout>>,
     root_widget: &mut widgets::RootWidget,
     utc: bool,
-) -> Result<ratatui::Terminal<CrosstermBackend<std::io::Stdout>>> {
+) -> Result<()> {
     loop {
         let area = terminal.get_frame().area();
         let now: chrono::NaiveDateTime = if utc {
@@ -86,7 +87,7 @@ async fn loop_run(
             && key.kind == KeyEventKind::Press
         {
             match key.code {
-                KeyCode::Char('q') | KeyCode::Esc => return Ok(terminal),
+                KeyCode::Char('q') | KeyCode::Esc => return Ok(()),
                 _ => {}
             }
         }
