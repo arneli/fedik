@@ -18,6 +18,10 @@ fedik --help
 fedik -swd
 ```
 
+### Controls
+
+- Press `q`, `Esc`, or `Ctrl-C` to quit.
+
 ### Options
 
 - `-s, --show-seconds`

@@ -2,7 +2,7 @@ use anyhow::Result;
 use chrono::{Local, Utc};
 use clap::Parser;
 mod font;
-use crossterm::event::{Event, KeyCode, KeyEventKind, poll, read};
+use crossterm::event::{Event, KeyCode, KeyEventKind, KeyModifiers, poll, read};
 use ratatui::{layout::Rect, prelude::CrosstermBackend};
 
 mod widgets;
@@ -88,6 +88,9 @@ async fn loop_run(
         {
             match key.code {
                 KeyCode::Char('q') | KeyCode::Esc => return Ok(()),
+                KeyCode::Char('c') if key.modifiers.contains(KeyModifiers::CONTROL) => {
+                    return Ok(());
+                }
                 _ => {}
             }
         }
